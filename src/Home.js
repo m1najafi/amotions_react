@@ -24,7 +24,9 @@ export default class Home extends Component {
       selected_session_ts: '',
       event_start_date: '',
       event_start_time: '',
+      event_duration: 0,
       event_end_time: '',
+      event_num_spots: 0,
       show_register_form: false,
       show_edit_form: false,
       show_create_form: false,
@@ -88,6 +90,11 @@ export default class Home extends Component {
 
   onCreateFormSubmit(e) {
     e.preventDefault();
+    console.log("event_start_date" + this.state.event_start_date + "event_start_time" + this.state.event_start_time + "event_duration" + this.state.event_duration);
+    // var date = this.state.event_start_date;
+    // var time = date.getTime()
+    // date.setTime(time + 1000*60);
+    // console.log("time" + date);
     this.handleCreateClose();
   };
 
@@ -394,6 +401,16 @@ export default class Home extends Component {
             onChange={e => this.handleChange(e)}
           />
         </Form.Group>
+        <Form.Group controlId="numSpots">
+          <Form.Label>Number of spots</Form.Label>
+          <Form.Control
+            type="number"
+            value={this.state.event_num_spots}
+            name="event_num_spots"
+            placeholder=""
+            onChange={e => this.handleChange(e)}
+          />
+        </Form.Group>
         <Form.Group controlId="event_date">
           <DatePicker
             id="date-picker"
@@ -411,7 +428,7 @@ export default class Home extends Component {
           <DatePickerInput
             id="date-picker-input-id-start"
             className="some-class"
-            labelText="Date Picker label"
+            labelText="Event date"
             placeholder="mm/dd/yyyy"
             invalidText="A valid value is required"
           />
@@ -419,32 +436,34 @@ export default class Home extends Component {
           <TimePicker
             id="time-picker"
             icondescription="Icon description"
+            labelText='Start time'
             onChange={e => {
-              console.log(e);
+              console.log("start time", e.target.value);
               this.setState(
                 {
-                  event_start_time: e
+                  event_start_time: e.target.value
                 },
               );
             }}
           >
-          <TimePickerSelect
+          {/*<TimePickerSelect
             id="time-picker-input-id-end"
             className="some-class"
             labelText="Date Picker label"
             >
               <SelectItem value="AM" text="AM" />
               <SelectItem value="PM" text="PM" />
-          </TimePickerSelect>
+          </TimePickerSelect>*/}
           </TimePicker>
-          <TimePicker
+          {/*<TimePicker
             id="time-picker"
             icondescription="Icon description"
+            labelText='End time'
             onChange={e => {
-              console.log(e);
+              console.log("end time", e.target.value);
               this.setState(
                 {
-                  event_end_time: e
+                  event_end_time: e.target.value
                 },
               );
             }}
@@ -457,8 +476,18 @@ export default class Home extends Component {
               <SelectItem value="AM" text="AM" />
               <SelectItem value="PM" text="PM" />
           </TimePickerSelect>
-          </TimePicker>
+          </TimePicker>*/}
 
+        </Form.Group>
+        <Form.Group controlId="numSpots">
+          <Form.Label>Event duration (minutes)</Form.Label>
+          <Form.Control
+            type="number"
+            value={this.state.event_duration}
+            name="event_duration"
+            placeholder=""
+            onChange={e => this.handleChange(e)}
+          />
         </Form.Group>
 
         <Form.Group>
