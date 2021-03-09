@@ -7,7 +7,8 @@ import BootstrapTable from "react-bootstrap-table-next";
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { NavLink, Router, BrowserRouter, Switch, Route, Link} from 'react-router-dom';
-
+import { DatePicker, DatePickerInput, TimePicker, TimePickerSelect, SelectItem} from "carbon-components-react";
+import "carbon-components/css/carbon-components.css";
 
 export default class Home extends Component {
   constructor(props) {
@@ -21,8 +22,12 @@ export default class Home extends Component {
       description: '',
       participants: '',
       selected_session_ts: '',
+      event_start_date: '',
+      event_start_time: '',
+      event_end_time: '',
       show_register_form: false,
       show_edit_form: false,
+      show_create_form: false,
       columns: [
          {
            dataField: "start_time_formatted",
@@ -81,10 +86,21 @@ export default class Home extends Component {
     this.updateSession();
   };
 
+  onCreateFormSubmit(e) {
+    e.preventDefault();
+    this.handleCreateClose();
+  };
+
+
   onRegisterChanged(row) {
     this.setState({['show_register_form'] : true});
     this.setState({['selected_session_ts'] : row['start_time']});
     console.log(row, row['start_time']);
+  };
+
+  onCreateEvent(row) {
+    this.setState({['show_create_form'] : true});
+    this.setState({['description'] : ''});
   };
 
   onEditChanged(row) {
@@ -100,6 +116,10 @@ export default class Home extends Component {
 
   handleEditClose() {
     this.setState({['show_edit_form'] : false});
+  }
+
+  handleCreateClose() {
+    this.setState({['show_create_form'] : false});
   }
 
   handleChange(e) {
@@ -269,6 +289,11 @@ export default class Home extends Component {
 
       <h2 className="title">Upcoming Group Virtual Sessions</h2>
       <hr className="hr-title-line"/>
+      <Button
+        variant="primary"
+        onClick={e => this.onCreateEvent(e)}>
+        Create Event
+      </Button>
       <BootstrapTable
         keyField="id"
         data={this.state.all_data_from_db}
@@ -352,6 +377,97 @@ export default class Home extends Component {
            onClick={e => this.onEditFormSubmit(e)}
            block>
              Save
+           </Button>
+        </Form.Group>
+      </Modal>
+      <Modal show={this.state.show_create_form} onHide={e => this.handleCreateClose(e)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Event details</Modal.Title>
+        </Modal.Header>
+        <Form.Group controlId="description">
+          <Form.Label>Event description</Form.Label>
+          <Form.Control
+            type="text"
+            value={this.state.description}
+            name="description"
+            placeholder=""
+            onChange={e => this.handleChange(e)}
+          />
+        </Form.Group>
+        <Form.Group controlId="event_date">
+          <DatePicker
+            id="date-picker"
+            datePickerType="single"
+            icondescription="Icon description"
+            onChange={e => {
+              console.log(new Date(e));
+              this.setState(
+                {
+                  event_start_date: new Date(e)
+                },
+              );
+            }}
+          >
+          <DatePickerInput
+            id="date-picker-input-id-start"
+            className="some-class"
+            labelText="Date Picker label"
+            placeholder="mm/dd/yyyy"
+            invalidText="A valid value is required"
+          />
+          </DatePicker>
+          <TimePicker
+            id="time-picker"
+            icondescription="Icon description"
+            onChange={e => {
+              console.log(e);
+              this.setState(
+                {
+                  event_start_time: e
+                },
+              );
+            }}
+          >
+          <TimePickerSelect
+            id="time-picker-input-id-end"
+            className="some-class"
+            labelText="Date Picker label"
+            >
+              <SelectItem value="AM" text="AM" />
+              <SelectItem value="PM" text="PM" />
+          </TimePickerSelect>
+          </TimePicker>
+          <TimePicker
+            id="time-picker"
+            icondescription="Icon description"
+            onChange={e => {
+              console.log(e);
+              this.setState(
+                {
+                  event_end_time: e
+                },
+              );
+            }}
+          >
+          <TimePickerSelect
+            id="time-picker-input-id-start"
+            className="some-class"
+            labelText="Date Picker label"
+            >
+              <SelectItem value="AM" text="AM" />
+              <SelectItem value="PM" text="PM" />
+          </TimePickerSelect>
+          </TimePicker>
+
+        </Form.Group>
+
+        <Form.Group>
+           <Button
+           variant="primary"
+           type="button"
+           onClick={e => this.onCreateFormSubmit(e)}
+           block>
+             Create Event
            </Button>
         </Form.Group>
       </Modal>
