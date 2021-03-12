@@ -7,8 +7,15 @@ import BootstrapTable from "react-bootstrap-table-next";
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { NavLink, Router, BrowserRouter, Switch, Route, Link} from 'react-router-dom';
-import { DatePicker, DatePickerInput, TimePicker, TimePickerSelect, SelectItem} from "carbon-components-react";
 import "carbon-components/css/carbon-components.css";
+import {
+  DatePicker,
+  TimePicker,
+  DateTimePicker,
+  MuiPickersUtilsProvider,
+} from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
+import LuxonUtils from '@date-io/luxon';
 
 export default class Home extends Component {
   constructor(props) {
@@ -22,7 +29,7 @@ export default class Home extends Component {
       description: '',
       participants: '',
       selected_session_ts: '',
-      event_start_date: '',
+      event_start_date: new Date(),
       event_start_time: '',
       event_duration: 0,
       event_end_time: '',
@@ -76,26 +83,20 @@ export default class Home extends Component {
 
   onRegisterFormSubmit(e) {
     e.preventDefault();
-    // console.log("hello" + this.state.firstName + ' ' + this.state.lastName + ' ' + this.state.email, + ' ' + this.state.selected_session_ts);
     this.handleClose();
     this.sendRegisteration();
   };
 
   onEditFormSubmit(e) {
     e.preventDefault();
-    // console.log("hello" + this.state.firstName + ' ' + this.state.lastName + ' ' + this.state.email, + ' ' + this.state.selected_session_ts);
     this.handleEditClose();
     this.updateSession();
   };
 
   onCreateFormSubmit(e) {
     e.preventDefault();
-    console.log("event_start_date" + this.state.event_start_date + "event_start_time" + this.state.event_start_time + "event_duration" + this.state.event_duration);
-    // var date = this.state.event_start_date;
-    // var time = date.getTime()
-    // date.setTime(time + 1000*60);
-    // console.log("time" + date);
     this.handleCreateClose();
+    this.create_session();
   };
 
 
@@ -172,9 +173,6 @@ export default class Home extends Component {
             'selected_session_ts' : this.state.selected_session_ts,
             'description' : this.state.description,
         },
-      //   headers: {
-      //   'Access-Control-Allow-Origin' : '*',
-      // },
       })
     .then((response) => {
       console.log(response);
@@ -184,16 +182,27 @@ export default class Home extends Component {
     });
   }
 
+  async create_session() {
+    await axios({
+        method: 'post',
+        url: 'https://cqakerxfi7.execute-api.us-west-2.amazonaws.com/prod/manageSessions/',
+        params: { reqType: 'create_session'},
+        data: {
+            'start_time' : (this.state.event_start_date.getTime()/1000).toString(),
+            'event_description' : this.state.description,
+            'num_spots' : parseInt(this.state.event_num_spots),
+            'duration_minutes' : parseInt(this.state.event_duration)
+        },
+      })
+    .then((response) => {
+      console.log(response);
+      this.getSessions()
+    }, (error) => {
+      console.log(error);
+    });
+  }
 
   async sendRegisteration() {
-    // await axios.post(
-    //   'https://cqakerxfi7.execute-api.us-west-2.amazonaws.com/prod/manageSessions/',
-    //   {
-    //   'selected_session_ts' : this.state.selected_session_ts,
-    //   'email' : this.state.email,
-    //   'firstName' : this.state.firstName,
-    //   'lastName' : this.state.lastName
-    //   }
 
     await axios({
         method: 'post',
@@ -205,9 +214,6 @@ export default class Home extends Component {
             'firstName' : this.state.firstName,
             'lastName' : this.state.lastName
         },
-      //   headers: {
-      //   'Access-Control-Allow-Origin' : '*',
-      // },
       })
     .then((response) => {
       console.log(response);
@@ -227,8 +233,6 @@ export default class Home extends Component {
     ).then((response) => {
   console.log('response:', response);
   this.setState({['all_data_from_db'] : response.data});
-  var result = JSON.parse( this.state.all_data_from_db[0]['participants']);
-  console.log('response data:', result[0]['Email']);
 }, (error) => {
   console.log(error);
 });
@@ -408,86 +412,46 @@ export default class Home extends Component {
             value={this.state.event_num_spots}
             name="event_num_spots"
             placeholder=""
-            onChange={e => this.handleChange(e)}
+            onChange={e => {
+                          if (e.target.value >= 0) {
+                          this.setState({
+                             event_num_spots: e.target.value
+                           }
+                         );
+                       }}
+                       }
           />
         </Form.Group>
-        <Form.Group controlId="event_date">
-          <DatePicker
-            id="date-picker"
-            datePickerType="single"
-            icondescription="Icon description"
-            onChange={e => {
-              console.log(new Date(e));
-              this.setState(
-                {
-                  event_start_date: new Date(e)
-                },
-              );
-            }}
-          >
-          <DatePickerInput
-            id="date-picker-input-id-start"
-            className="some-class"
-            labelText="Event date"
-            placeholder="mm/dd/yyyy"
-            invalidText="A valid value is required"
-          />
-          </DatePicker>
-          <TimePicker
-            id="time-picker"
-            icondescription="Icon description"
-            labelText='Start time'
-            onChange={e => {
-              console.log("start time", e.target.value);
-              this.setState(
-                {
-                  event_start_time: e.target.value
-                },
-              );
-            }}
-          >
-          {/*<TimePickerSelect
-            id="time-picker-input-id-end"
-            className="some-class"
-            labelText="Date Picker label"
-            >
-              <SelectItem value="AM" text="AM" />
-              <SelectItem value="PM" text="PM" />
-          </TimePickerSelect>*/}
-          </TimePicker>
-          {/*<TimePicker
-            id="time-picker"
-            icondescription="Icon description"
-            labelText='End time'
-            onChange={e => {
-              console.log("end time", e.target.value);
-              this.setState(
-                {
-                  event_end_time: e.target.value
-                },
-              );
-            }}
-          >
-          <TimePickerSelect
-            id="time-picker-input-id-start"
-            className="some-class"
-            labelText="Date Picker label"
-            >
-              <SelectItem value="AM" text="AM" />
-              <SelectItem value="PM" text="PM" />
-          </TimePickerSelect>
-          </TimePicker>*/}
 
-        </Form.Group>
-        <Form.Group controlId="numSpots">
+        <Form.Group controlId="event_duration">
           <Form.Label>Event duration (minutes)</Form.Label>
           <Form.Control
             type="number"
             value={this.state.event_duration}
             name="event_duration"
             placeholder=""
-            onChange={e => this.handleChange(e)}
+            onChange={e => {
+                          if (e.target.value >= 0) {
+                          this.setState({
+                             event_duration: e.target.value
+                           }
+                         );
+                       }}
+                       }
           />
+        </Form.Group>
+
+        <Form.Group controlId="event_date">
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                <DateTimePicker value={this.state.event_start_date} onChange={e => {
+                  //console.log(e.target.value);
+                  this.setState(
+                    {
+                      event_start_date: e
+                    },
+                  );
+                }} />
+          </MuiPickersUtilsProvider>
         </Form.Group>
 
         <Form.Group>
